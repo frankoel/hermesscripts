@@ -167,7 +167,7 @@ if __name__ == '__main__':
     # INSERTS previos en la BD
 
     # INSERT INTO public.company (active, code, "name") VALUES(true, '11112222A', 'TEST');
-    # INSERT INTO public.user_data (active, "admin", code, "name", "password", company_id) VALUES(true, true, '75763090D', 'Fran', 'LAQUESEA', 1);
+    # INSERT INTO public.user_data (active, "admin", code, "name", "password", "email", company_id) VALUES(true, true, '75763090D', 'Fran', 'LAQUESEA', 'fj@gmail.com', 1);
     # INSERT INTO public.project (active, code, "description", "name", company_id) VALUES(true, '222', 'la descripcion', 'proyecto', 1);
 
 
@@ -186,8 +186,9 @@ if __name__ == '__main__':
     _url_dedication_code = f"http://localhost:8080/dedication/getDedicationByProjectAndUser"    
 
     # Basic = Base64 (user:password generada en spring)
-    _token_basic = "dXNlcjo5NmE5ZWQzZC01NjczLTRmZTctOTA1NS01NzVjYjhmYWY1M2U="
-    _token = get_token("75763090D", "LAQUESEA", _url_auth, _token_basic, print_token=True)
+    # _token_basic = "dXNlcjo5NmE5ZWQzZC01NjczLTRmZTctOTA1NS01NzVjYjhmYWY1M2U="
+    # _token = get_token("75763090D", "LAQUESEA", _url_auth, _token_basic, print_token=True)
+    _token = "AAA"
     print("\r\n")
 
     execute_tests_company(_url_company, _url_company_id, _url_company_code, _token)

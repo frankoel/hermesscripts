@@ -8,6 +8,7 @@ class User:
         self.code = "0123456789"
         self.password = "0123456789"
         self.companyCode = "11112222A"
+        self.email = "fj@gmail.com"
         self.active = True
         self.admin = True
 
@@ -20,6 +21,7 @@ class User:
         self.code = json_received["code"]
         self.password = json_received["password"]        
         self.companyCode = json_received["companyCode"]
+        self.email = json_received["email"]
         self.active = float(json_received["active"])
         self.admin = float(json_received["admin"])
 

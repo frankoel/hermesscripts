@@ -23,7 +23,7 @@ def execute_tests_company(url, urlid, urlcode, token):
     companyFunctions = CompanyFunctions()
 
     # Vamos a hacer un post para añadir uno
-    element_created = companyFunctions.make_post_company(url, token)
+    element_created = companyFunctions.make_post_company(url, token, None)
     assert element_created is not None
     print(f"Se ha creado el elemento con id {element_created.id}")
 
@@ -54,7 +54,7 @@ def execute_tests_project(url, urlid, urlcode, token):
     projectFunctions = ProjectFunctions()
 
     # Vamos a hacer un post para añadir uno
-    element_created = projectFunctions.make_post_project(url, token)
+    element_created = projectFunctions.make_post_project(url, token, None)
     assert element_created is not None
     print(f"Se ha creado el elemento con id {element_created.id}")
 
@@ -84,7 +84,7 @@ def execute_tests_user(url, urlid, urlcode, token):
     userFunctions = UserFunctions()
 
     # Vamos a hacer un post para añadir uno
-    element_created = userFunctions.make_post_user(url, token)
+    element_created = userFunctions.make_post_user(url, token, None)
     assert element_created is not None
     print(f"Se ha creado el elemento con id {element_created.id}")
 
@@ -170,6 +170,9 @@ if __name__ == '__main__':
     # INSERT INTO public.user_data (active, "admin", code, "name", "password", "email", company_id) VALUES(true, true, '75763090D', 'Fran', 'LAQUESEA', 'fj@gmail.com', 1);
     # INSERT INTO public.project (active, code, "description", "name", company_id) VALUES(true, '222', 'la descripcion', 'proyecto', 1);
 
+    companyFunctions = CompanyFunctions()
+    userFunctions = UserFunctions()
+    projectFunctions = ProjectFunctions()
 
     _url_auth = f"http://localhost:8080/user/login"
     _url_company = f"http://localhost:8080/company"
@@ -177,7 +180,7 @@ if __name__ == '__main__':
     _url_company_code = f"http://localhost:8080/company/getCompanyByCode"
     _url_project = f"http://localhost:8080/project"
     _url_project_id = f"http://localhost:8080/project/getProjectById"
-    _url_projecty_code = f"http://localhost:8080/project/getProjectByCode"
+    _url_project_code = f"http://localhost:8080/project/getProjectByCode"
     _url_user = f"http://localhost:8080/user"
     _url_user_id = f"http://localhost:8080/user/getUserById"
     _url_user_code = f"http://localhost:8080/user/getUserByCode"    
@@ -185,16 +188,42 @@ if __name__ == '__main__':
     _url_dedication_id = f"http://localhost:8080/dedication/getDedicationById"
     _url_dedication_code = f"http://localhost:8080/dedication/getDedicationByProjectAndUser"    
 
-    # Basic = Base64 (user:password generada en spring)
+       # Basic = Base64 (user:password generada en spring)
     # _token_basic = "dXNlcjo5NmE5ZWQzZC01NjczLTRmZTctOTA1NS01NzVjYjhmYWY1M2U="
     # _token = get_token("75763090D", "LAQUESEA", _url_auth, _token_basic, print_token=True)
     _token = "AAA"
     print("\r\n")
 
+    company = Company()
+    company.active = True
+    company.code = '11112222A'
+    company.name = 'TEST'
+    element_created_c = companyFunctions.make_post_company(_url_company, _token, company)
+    assert element_created_c is not None
+
+    user = User()
+    user.active = True
+    user.admin = True
+    user.code = '75763090D'
+    user.name ="Fran"
+    user.password = "LAQUESEA"
+    user.email = 'fj@gmail.com'
+    user.companyCode = '11112222A'
+    element_created_u = userFunctions.make_post_user(_url_user, _token, user)
+    assert element_created_u is not None
+
+    project = Project()
+    project.code = '222'
+    project.name = 'proyecto'
+    project.codeCompany = '11112222A'
+    element_created_p = projectFunctions.make_post_project(_url_project, _token, project)
+    assert element_created_p is not None
+    
+    
     execute_tests_company(_url_company, _url_company_id, _url_company_code, _token)
     print("\r\n")
 
-    execute_tests_project(_url_project, _url_project_id, _url_projecty_code, _token)
+    execute_tests_project(_url_project, _url_project_id, _url_project_code, _token)
     print("\r\n")
 
     execute_tests_user(_url_user, _url_user_id, _url_user_code, _token)
@@ -202,5 +231,9 @@ if __name__ == '__main__':
 
     execute_tests_dedication(_url_dedication, _url_dedication_id, _url_dedication_code, _token)
     print("\r\n")
+
+    projectFunctions.delete_project(_url_project, _token, element_created_p.id)
+    userFunctions.delete_user(_url_user, _token, element_created_u.id)
+    companyFunctions.delete_company(_url_company, _token, element_created_c.id)
 
    

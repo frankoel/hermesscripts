@@ -40,10 +40,13 @@ class UserFunctions:
         return result_obj
 
 
-    def make_post_user(self, url, token):
+    def make_post_user(self, url, token, element):
         result_obj = None
         headers = {"Authorization": "Bearer " + token, "Content-type": "application/json"}
         user_request = User()
+
+        if(element is not None):
+            user_request = element        
 
         json_to_send = user_request.to_json()
         result = requests.post(url, headers=headers, data=json_to_send)

@@ -5,7 +5,7 @@ class Company:
     def __init__(self):
         self.id = None
         self.name = "name"
-        self.code = "0123456789"
+        self.code = "11112226A"
         self.active = True
 
     def to_json(self):

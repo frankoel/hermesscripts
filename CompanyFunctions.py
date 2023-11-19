@@ -40,10 +40,12 @@ class CompanyFunctions:
         return result_obj
 
 
-    def make_post_company(self, url, token):
+    def make_post_company(self, url, token, element):
         result_obj = None
         headers = {"Authorization": "Bearer " + token, "Content-type": "application/json"}
         company_request = Company()
+        if(element is not None):
+            company_request = element
 
         json_to_send = company_request.to_json()
         result = requests.post(url, headers=headers, data=json_to_send)

@@ -40,10 +40,13 @@ class ProjectFunctions:
         return result_obj
 
 
-    def make_post_project(self, url, token):
+    def make_post_project(self, url, token, element):
         result_obj = None
         headers = {"Authorization": "Bearer " + token, "Content-type": "application/json"}
         project_request = Project()
+        
+        if(element is not None):
+            project_request = element
 
         json_to_send = project_request.to_json()
         result = requests.post(url, headers=headers, data=json_to_send)

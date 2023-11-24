@@ -3,6 +3,7 @@ import string
 import datetime
 import random
 import time
+import psycopg2
 
 import requests
 
@@ -139,42 +140,91 @@ def execute_tests_dedication(url, urlid, urlcode, token):
     print(f"Todas las pruebas finalizadas con éxito")    
 
 
-def get_token(code, password, auth_url, token, print_token=True):
+def get_token(email, password, auth_url, print_token=True):
 
-    headers = {"Authorization": "Basic " + token, "Content-type": "application/json"}
+    #headers = {"Authorization": "Basic " + token, "Content-type": "application/json"}
+    headers = {"Content-type": "application/json"}
     
     userlogin = UserLogin()
-    userlogin.code = code
+    userlogin.email = email
     userlogin.password = password
     userlogin_send = userlogin.to_json()
 
     result = requests.post(auth_url, data=userlogin_send, headers=headers)
 
-    if result.status_code == 202:
-        token = result.content.decode("utf-8")
+    if result.status_code == 200:
+        token = result.json()['token']
         if print_token:
-            print(f"{code} - {token}")
+            print(f"{email} - {token}")
         return token
 
     print(f"Result = {result.status_code}. {result.content}")
 
     return None
 
+def create_data():
+
+    #Establishing the connection
+    conn = psycopg2.connect(
+    database="hermes", user='docker', password='docker', host='127.0.0.1', port= '5432'
+    )
+    #Setting auto commit false
+    conn.autocommit = True
+
+    #Creating a cursor object using the cursor() method
+    cursor = conn.cursor()
+
+    # Preparing SQL queries to INSERT a record into the database.
+    cursor.execute('''INSERT INTO public.company(active, code, "name")
+     VALUES(true, '11112222A', 'TEST')''')
+
+    cursor.execute('''INSERT INTO public.user_data(active, "admin", code, "name", "password", "email", company_id)
+     VALUES(true, true, '75763090D', 'Fran', '$2a$12$2qJkjx/w0Kq1zBib6zLa9uqKuc.76oCODmStIlis/HaGZrXQl7AX.', 'fj@gmail.com', 1)''')
+
+    cursor.execute('''INSERT INTO public.project(active, code, "description", "name", company_id)
+     VALUES(true, '222', 'la descripcion', 'proyecto', 1)''')
+
+    # Commit your changes in the database
+    conn.commit()
+    print("Records inserted........")
+
+    # Closing the connection
+    conn.close()
+
+
+def delete_data():
+
+    #Establishing the connection
+    conn = psycopg2.connect(
+    database="hermes", user='docker', password='docker', host='127.0.0.1', port= '5432'
+    )
+    #Setting auto commit false
+    conn.autocommit = True
+
+    #Creating a cursor object using the cursor() method
+    cursor = conn.cursor()
+
+    # Preparing SQL queries to DELETE a record into the database
+    cursor.execute('''DELETE FROM public.project''')
+
+    cursor.execute('''DELETE FROM public.user_data''')
+
+    cursor.execute('''DELETE FROM public.company''')     
+
+    # Commit your changes in the database
+    conn.commit()
+    print("Records deleted........")
+
+    # Closing the connection
+    conn.close()    
 
 
 if __name__ == '__main__':
     
     # INSERTS previos en la BD
+    create_data()
 
-    # INSERT INTO public.company (active, code, "name") VALUES(true, '11112222A', 'TEST');
-    # INSERT INTO public.user_data (active, "admin", code, "name", "password", "email", company_id) VALUES(true, true, '75763090D', 'Fran', 'LAQUESEA', 'fj@gmail.com', 1);
-    # INSERT INTO public.project (active, code, "description", "name", company_id) VALUES(true, '222', 'la descripcion', 'proyecto', 1);
-
-    companyFunctions = CompanyFunctions()
-    userFunctions = UserFunctions()
-    projectFunctions = ProjectFunctions()
-
-    _url_auth = f"http://localhost:8080/user/login"
+    _url_auth = f"http://localhost:8080/auth/login"
     _url_company = f"http://localhost:8080/company"
     _url_company_id = f"http://localhost:8080/company/getCompanyById"
     _url_company_code = f"http://localhost:8080/company/getCompanyByCode"
@@ -188,37 +238,8 @@ if __name__ == '__main__':
     _url_dedication_id = f"http://localhost:8080/dedication/getDedicationById"
     _url_dedication_code = f"http://localhost:8080/dedication/getDedicationByProjectAndUser"    
 
-       # Basic = Base64 (user:password generada en spring)
-    # _token_basic = "dXNlcjo5NmE5ZWQzZC01NjczLTRmZTctOTA1NS01NzVjYjhmYWY1M2U="
-    # _token = get_token("75763090D", "LAQUESEA", _url_auth, _token_basic, print_token=True)
-    _token = "AAA"
+    _token = get_token("fj@gmail.com", "LAQUESEA", _url_auth, True)
     print("\r\n")
-
-    company = Company()
-    company.active = True
-    company.code = '11112222A'
-    company.name = 'TEST'
-    element_created_c = companyFunctions.make_post_company(_url_company, _token, company)
-    assert element_created_c is not None
-
-    user = User()
-    user.active = True
-    user.admin = True
-    user.code = '75763090D'
-    user.name ="Fran"
-    user.password = "LAQUESEA"
-    user.email = 'fj@gmail.com'
-    user.companyCode = '11112222A'
-    element_created_u = userFunctions.make_post_user(_url_user, _token, user)
-    assert element_created_u is not None
-
-    project = Project()
-    project.code = '222'
-    project.name = 'proyecto'
-    project.codeCompany = '11112222A'
-    element_created_p = projectFunctions.make_post_project(_url_project, _token, project)
-    assert element_created_p is not None
-    
     
     execute_tests_company(_url_company, _url_company_id, _url_company_code, _token)
     print("\r\n")
@@ -232,8 +253,6 @@ if __name__ == '__main__':
     execute_tests_dedication(_url_dedication, _url_dedication_id, _url_dedication_code, _token)
     print("\r\n")
 
-    projectFunctions.delete_project(_url_project, _token, element_created_p.id)
-    userFunctions.delete_user(_url_user, _token, element_created_u.id)
-    companyFunctions.delete_company(_url_company, _token, element_created_c.id)
+    delete_data()
 
    
